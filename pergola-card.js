@@ -77,9 +77,11 @@ class PergolaCard extends HTMLElement {
     const g=ctl.querySelector('#g'); if(g) g.addEventListener('change',()=>this._hass.callService('cover','set_cover_position',{entity_id:c.glass_entity,position:+g.value}));
     this._ctlT=t; this._ctlG=g;
   }
-  _setTilt(v){const c=this._cfg, dom=c.tilt_entity.split('.')[0];
-    if(dom==='cover') this._hass.callService('cover','set_cover_tilt_position',{entity_id:c.tilt_entity,tilt_position:v});
-    else if(dom==='number'||dom==='input_number') this._hass.callService(dom,'set_value',{entity_id:c.tilt_entity,value:v/100*c.tilt_max});}
+  _setTilt(v){const c=this._cfg, id=c.tilt_entity, dom=id.split('.')[0];
+    if(dom==='cover'){const st=this._hass.states[id], hasTilt=!!(st&&st.attributes&&st.attributes.current_tilt_position!=null);
+      if(hasTilt) this._hass.callService('cover','set_cover_tilt_position',{entity_id:id,tilt_position:v});
+      else this._hass.callService('cover','set_cover_position',{entity_id:id,position:v});}
+    else if(dom==='number'||dom==='input_number') this._hass.callService(dom,'set_value',{entity_id:id,value:v/100*c.tilt_max});}
   _render(){
     const c=this._cfg, svg=this._svg; if(!svg) return;
     const wall=c.mount==='wall', vertical=c.louvers==='vertical', slatsN=c.slats, fixedEvery=c.fixed_every, ledType=c.led_type, glass=c.glass;
