@@ -22,7 +22,7 @@ class PergolaCard extends HTMLElement {
     const d={title:'Pergola',tilt_entity:null,tilt_max:100,led_entity:null,glass_entity:null,day_night:null,mount:'free',louvers:'horizontal',slats:14,fixed_every:0,led_type:'strip',led_rgb:false,led_color:'#ffdca6',led_temp:'warm',glass:false,controls:false};
     this._cfg=Object.assign(d,config||{}); this._built=false;
   }
-  static getStubConfig(){return {mount:'free',louvers:'horizontal',slats:14,fixed_every:4,glass:false,controls:true};}
+  static getStubConfig(){return {tilt_entity:'',led_entity:'',glass_entity:'',mount:'free',louvers:'horizontal',slats:14,fixed_every:4,glass:false,controls:true};}
   getCardSize(){return this._cfg&&this._cfg.controls?6:4;}
   set hass(h){this._hass=h; if(!this._built)this._build(); this._sync();}
   _pct(id,max){const st=this._hass&&this._hass.states[id]; if(!st)return null; const dom=id.split('.')[0], a=st.attributes||{};
