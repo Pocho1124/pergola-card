@@ -19,10 +19,10 @@ const W=3.0, D=2.2, H=1.6, T=0.042, PITCH=0.185;
 function rad(p){return p/100*90*Math.PI/180;}
 class PergolaCard extends HTMLElement {
   setConfig(config){
-    if(!config||!config.tilt_entity) throw new Error("pergola-card: definisci 'tilt_entity'");
     const d={title:'Pergola',tilt_entity:null,tilt_max:100,led_entity:null,glass_entity:null,day_night:null,mount:'free',louvers:'horizontal',slats:14,fixed_every:0,led_type:'strip',led_rgb:false,led_color:'#ffdca6',led_temp:'warm',glass:false,controls:false};
-    this._cfg=Object.assign(d,config); this._built=false;
+    this._cfg=Object.assign(d,config||{}); this._built=false;
   }
+  static getStubConfig(){return {mount:'free',louvers:'horizontal',slats:14,fixed_every:4,glass:false,controls:true};}
   getCardSize(){return this._cfg&&this._cfg.controls?6:4;}
   set hass(h){this._hass=h; if(!this._built)this._build(); this._sync();}
   _pct(id,max){const st=this._hass&&this._hass.states[id]; if(!st)return null; const dom=id.split('.')[0], a=st.attributes||{};
@@ -30,7 +30,7 @@ class PergolaCard extends HTMLElement {
     const v=parseFloat(st.state); return isNaN(v)?null:Math.max(0,Math.min(100,v/max*100));}
   _sync(){
     const c=this._cfg,h=this._hass;
-    const tilt=this._pct(c.tilt_entity,c.tilt_max); this._tiltTarget=tilt==null?0:tilt;
+    const tilt=c.tilt_entity?this._pct(c.tilt_entity,c.tilt_max):50; this._tiltTarget=(tilt==null?50:tilt);
     const ls=c.led_entity&&h.states[c.led_entity]; this._ledOn=!!(ls&&ls.state==='on');
     let col=c.led_color; if(!c.led_rgb) col=(c.led_temp==='cool')?'#eaf1ff':'#ffdca6';
     else if(ls&&ls.attributes&&ls.attributes.rgb_color){const r=ls.attributes.rgb_color; col='rgb('+r[0]+','+r[1]+','+r[2]+')';}
