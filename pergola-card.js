@@ -78,9 +78,10 @@ class PergolaCard extends HTMLElement {
     this._ctlT=t; this._ctlG=g;
   }
   _setTilt(v){const c=this._cfg, id=c.tilt_entity, dom=id.split('.')[0];
-    if(dom==='cover'){const st=this._hass.states[id], hasTilt=!!(st&&st.attributes&&st.attributes.current_tilt_position!=null);
-      if(hasTilt) this._hass.callService('cover','set_cover_tilt_position',{entity_id:id,tilt_position:v});
-      else this._hass.callService('cover','set_cover_position',{entity_id:id,position:v});}
+    if(dom==='cover'){const st=this._hass.states[id], sf=(st&&st.attributes&&st.attributes.supported_features)||0;
+      if(sf&128) this._hass.callService('cover','set_cover_tilt_position',{entity_id:id,tilt_position:v});
+      else if(sf&4) this._hass.callService('cover','set_cover_position',{entity_id:id,position:v});
+      else this._hass.callService('cover', v>50?'open_cover':'close_cover', {entity_id:id});}
     else if(dom==='number'||dom==='input_number') this._hass.callService(dom,'set_value',{entity_id:id,value:v/100*c.tilt_max});}
   _render(){
     const c=this._cfg, svg=this._svg; if(!svg) return;
