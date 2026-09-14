@@ -64,7 +64,7 @@ class PergolaCard extends HTMLElement {
   }
   _build(){
     const c=this._cfg; this.attachShadow({mode:'open'});
-    this.shadowRoot.innerHTML='<style>ha-card{padding:12px}.head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}.t{font-size:1.1rem;font-weight:600;color:var(--primary-text-color)}.s{font-size:.8rem;color:var(--secondary-text-color)}svg{width:100%;height:auto;display:block;border-radius:12px;overflow:hidden}.row{display:flex;align-items:center;gap:10px;margin-top:8px}.row input[type=range]{flex:1;accent-color:var(--primary-color)}.lbl{font-size:.74rem;color:var(--secondary-text-color);margin:8px 2px 0}button.b{border:1px solid var(--divider-color,#d4d9e0);background:var(--secondary-background-color);color:var(--primary-text-color);border-radius:10px;padding:8px 12px;font-weight:600;cursor:pointer;width:100%}button.b.on{background:rgba(255,196,84,.16);border-color:rgba(255,196,84,.5)}</style>'
+    this.shadowRoot.innerHTML='<style>ha-card{padding:14px;border-radius:16px}.head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}.t{font-size:1.15rem;font-weight:700;letter-spacing:.2px;color:var(--primary-text-color)}.s{font-size:.78rem;color:var(--secondary-text-color);text-transform:capitalize}svg{width:100%;height:auto;display:block;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.12)}.ctl{margin-top:12px}.lbl{font-size:.72rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--secondary-text-color);margin:12px 2px 6px}.row{display:flex;align-items:center;gap:10px}.row input[type=range]{flex:1;height:6px;border-radius:6px;accent-color:var(--primary-color)}.btns{display:flex;gap:10px;margin-top:8px}button.b{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--divider-color,#d4d9e0);background:var(--secondary-background-color);color:var(--primary-text-color);border-radius:14px;padding:12px 10px;font-weight:600;font-size:.95rem;cursor:pointer;transition:transform .12s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease}button.b:active{transform:scale(.97)}button.b .i{font-size:1.1rem;line-height:1}button.b.on{box-shadow:0 2px 10px rgba(0,0,0,.10)}#l.on{background:rgba(255,196,84,.20);border-color:rgba(255,196,84,.65)}#s.on{background:rgba(80,150,255,.18);border-color:rgba(80,150,255,.6)}</style>'
       +'<ha-card><div class="head"><span class="t"></span><span class="s"></span></div><svg viewBox="0 0 400 300" role="img" aria-label="Pergola"></svg><div class="ctl"></div></ha-card>';
     this._svg=this.shadowRoot.querySelector('svg');
     this._titleEl=this.shadowRoot.querySelector('.t');
@@ -76,11 +76,17 @@ class PergolaCard extends HTMLElement {
   _buildControls(){
     const c=this._cfg, ctl=this.shadowRoot.querySelector('.ctl'); let html='';
     html+='<div class="lbl">Inclinazione</div><div class="row"><input id="t" type="range" min="0" max="100"></div>';
-    if(c.led_entity) html+='<div class="row"><button class="b" id="l">Luci</button></div>';
+    const btns=[];
+    if(c.led_entity) btns.push('<button class="b" id="l"><span class="i">💡</span>Luci</button>');
+    if(c.speaker_entity) btns.push('<button class="b" id="s"><span class="i">🔊</span>Casse</button>');
+    if(btns.length) html+='<div class="btns">'+btns.join('')+'</div>';
     if(c.glass_entity) html+='<div class="lbl">Vetrate</div><div class="row"><input id="g" type="range" min="0" max="100"></div>';
     ctl.innerHTML=html;
     const t=ctl.querySelector('#t'); if(t) t.addEventListener('change',()=>this._setTilt(+t.value));
     const l=ctl.querySelector('#l'); if(l) l.addEventListener('click',()=>this._hass.callService('homeassistant','toggle',{entity_id:c.led_entity}));
+    const s=ctl.querySelector('#s'); if(s) s.addEventListener('click',()=>{const id=c.speaker_entity,dom=id.split('.')[0];
+      if(dom==='media_player') this._hass.callService('media_player','media_play_pause',{entity_id:id});
+      else this._hass.callService('homeassistant','toggle',{entity_id:id});});
     const g=ctl.querySelector('#g'); if(g) g.addEventListener('change',()=>this._hass.callService('cover','set_cover_position',{entity_id:c.glass_entity,position:+g.value}));
     this._ctlT=t; this._ctlG=g;
   }
@@ -326,10 +332,11 @@ function draw(){
     if(this._ctlT && this.shadowRoot.activeElement!==this._ctlT) this._ctlT.value=Math.round(this._tiltTarget||0);
     if(this._ctlG && this.shadowRoot.activeElement!==this._ctlG) this._ctlG.value=Math.round(this._glassTarget||0);
     const lb=this.shadowRoot.querySelector('#l'); if(lb) lb.classList.toggle('on',this._ledOn);
+    const sb=this.shadowRoot.querySelector('#s'); if(sb) sb.classList.toggle('on',this._spkPlay);
   }
 }
 customElements.define('pergola-card', PergolaCard);
-const PERGOLA_CARD_VERSION='1.2.0';
+const PERGOLA_CARD_VERSION='1.3.0';
 try{console.info('%c PERGOLA-CARD %c v'+PERGOLA_CARD_VERSION+' ','color:#fff;background:#34383e;padding:2px 6px;border-radius:4px 0 0 4px','color:#34383e;background:#ffdca6;padding:2px 6px;border-radius:0 4px 4px 0');}catch(e){}
 window.customCards=window.customCards||[];
 window.customCards.push({type:'pergola-card',name:'Pergola Card',version:PERGOLA_CARD_VERSION,description:'Pergola bioclimatica con vista 3D animata: inclinazione delle lame, luci LED (strip o faretti, calde/fredde/RGB), vetrate scorrevoli e ambiente giorno/notte. Comandi direttamente dalla card.'});
