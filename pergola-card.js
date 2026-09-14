@@ -43,7 +43,8 @@ class PergolaCard extends HTMLElement {
     this._night=night;
     this._speaker=!!c.speaker;
     const sp=c.speaker_entity&&h.states[c.speaker_entity];
-    this._spkPlay = c.speaker_entity ? !!(sp&&sp.state==='playing') : !!c.speaker;
+    this._spkOn = c.speaker_entity ? !!(sp && !['off','unavailable','unknown','standby'].includes(sp.state)) : !!c.speaker;
+    this._spkPlaying = !!(sp && sp.state==='playing');
     if(this._titleEl) this._titleEl.textContent=c.title;
     this._animate();
   }
@@ -100,7 +101,7 @@ class PergolaCard extends HTMLElement {
     const c=this._cfg, svg=this._svg; if(!svg) return;
     const wall=c.mount==='wall', vertical=c.louvers==='vertical', slatsN=c.slats, fixedEvery=c.fixed_every, ledType=c.led_type, glass=c.glass;
     const night=this._night, ledOn=this._ledOn, ledColor=this._ledColor;
-    const frameColor=c.frame_color, louverColor=c.louver_color, speakerColor=c.speaker_color, speaker=this._speaker, spkPlay=this._spkPlay;
+    const frameColor=c.frame_color, louverColor=c.louver_color, speakerColor=c.speaker_color, speaker=this._speaker, spkOn=this._spkOn, spkPlaying=this._spkPlaying;
     const cur=this._cur, glassCur=this._glassCur, tilt=this._tiltShown;
     const count=()=>slatsN, isFixed=i=>fixedEvery>0&&((i+1)%fixedEvery===0);
 function metal(n){
@@ -318,9 +319,9 @@ function draw(){
       let s=`<polygon points="${[P(x0,y0,z),P(x1,y0,z),P(x1,y1,z),P(x0,y1,z)].map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="${speakerColor}" stroke="#0c0d10" stroke-width="1"/>`;
       for(let yy=y0+0.05; yy<y1; yy+=0.055){const a=P(x0+0.006,yy,z+0.001), b=P(x1-0.006,yy,z+0.001);
         s+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="#3a3f47" stroke-width="1"/>`;}
-      const on=spkPlay, lp=P(px,y0+0.02,z+0.002);
+      const on=spkOn, lp=P(px,y0+0.02,z+0.002);
       s+=`<circle cx="${lp.x.toFixed(1)}" cy="${lp.y.toFixed(1)}" r="${on?2.6:1.8}" fill="${on?'#38e08a':'#454b54'}"${on?' filter="url(#glow)"':''}/>`;
-      if(on){const cc=P(px,(y0+y1)/2,z+0.002);
+      if(spkPlaying){const cc=P(px,(y0+y1)/2,z+0.002);
         for(let w=1;w<=3;w++) s+=`<path d="M ${(cc.x+8*w).toFixed(1)} ${(cc.y-9*w).toFixed(1)} A ${11*w} ${11*w} 0 0 1 ${(cc.x+8*w).toFixed(1)} ${(cc.y+9*w).toFixed(1)}" fill="none" stroke="#8fd0ff" stroke-width="2.4" opacity="${(0.6-w*0.13).toFixed(2)}"/>`;}
       return s;
     };
@@ -333,11 +334,11 @@ function draw(){
     if(this._ctlT && this.shadowRoot.activeElement!==this._ctlT) this._ctlT.value=Math.round(this._tiltTarget||0);
     if(this._ctlG && this.shadowRoot.activeElement!==this._ctlG) this._ctlG.value=Math.round(this._glassTarget||0);
     const lb=this.shadowRoot.querySelector('#l'); if(lb) lb.classList.toggle('on',this._ledOn);
-    const sb=this.shadowRoot.querySelector('#s'); if(sb) sb.classList.toggle('on',this._spkPlay);
+    const sb=this.shadowRoot.querySelector('#s'); if(sb) sb.classList.toggle('on',this._spkOn);
   }
 }
 customElements.define('pergola-card', PergolaCard);
-const PERGOLA_CARD_VERSION='1.3.1';
+const PERGOLA_CARD_VERSION='1.3.2';
 try{console.info('%c PERGOLA-CARD %c v'+PERGOLA_CARD_VERSION+' ','color:#fff;background:#34383e;padding:2px 6px;border-radius:4px 0 0 4px','color:#34383e;background:#ffdca6;padding:2px 6px;border-radius:0 4px 4px 0');}catch(e){}
 window.customCards=window.customCards||[];
 window.customCards.push({type:'pergola-card',name:'Pergola Card',version:PERGOLA_CARD_VERSION,description:'Pergola bioclimatica con vista 3D animata: inclinazione delle lame, luci LED (strip o faretti, calde/fredde/RGB), vetrate scorrevoli e ambiente giorno/notte. Comandi direttamente dalla card.'});
