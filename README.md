@@ -81,6 +81,12 @@ controls: true                        # mostra i comandi in card
 | speaker_color | string | #1a1c20 | Colore casse. |
 | controls | boolean | false | Mostra slider inclinazione, pulsante luci e slider vetrate. |
 
+## ☕ Offrimi un caffè
+
+Se questa card ti è utile, puoi offrirmi un caffè:
+
+[![PayPal](https://img.shields.io/badge/PayPal-offri%20un%20caff%C3%A8-0070ba?logo=paypal&logoColor=white)](https://paypal.me/pocho1124)
+
 ## Licenza
 
 MIT.
