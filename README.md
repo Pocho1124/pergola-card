@@ -1,6 +1,8 @@
 # Pergola Card
 
-Custom card Lovelace per **pergole bioclimatiche**, con rendering 3D (SVG, nessuna dipendenza). Mostra la pergola in prospettiva con lame orientabili animate, luci LED, vetrate scorrevoli e ambiente (prato o muro). Un solo file, leggera.
+Porta la tua **pergola bioclimatica** dentro Home Assistant con una card che la disegna in **3D animato**: le lame si inclinano davvero seguendo l'entita', le luci LED si accendono con il colore giusto, le vetrate scorrono e l'ambiente cambia tra giorno e notte. Tutto in un unico file leggero, senza dipendenze esterne.
+
+Non e' solo un'icona: e' la tua pergola, viva sul dashboard, con i comandi a portata di dito.
 
 ![Anteprima Pergola Card](images/preview.gif)
 
@@ -38,7 +40,7 @@ title: Pergola Terrazzo
 tilt_entity: cover.pergola_lame       # inclinazione lame (obbligatoria)
 led_entity: light.pergola_led         # luci (opzionale)
 glass_entity: cover.pergola_vetrate   # vetrate scorrevoli (opzionale)
-day_night: sun.sun                    # giorno/notte (opzionale)
+day_night: sun.sun                    # sun.sun | 'auto' (ora) | sensore lux
 mount: free                           # free | wall
 louvers: horizontal                   # horizontal | vertical
 slats: 14                             # numero totale di lame
@@ -48,6 +50,11 @@ led_rgb: false                        # true = usa il colore dell'entita' RGB
 led_temp: warm                        # warm | cool  (se non RGB)
 led_color: "#ffdca6"                  # colore di default
 glass: true                           # mostra le vetrate
+speaker: true                         # casse integrate nei pilastri
+speaker_entity: media_player.pergola  # (opzionale) onde attive solo in play
+frame_color: "#34383e"                # colore struttura
+louver_color: "#d6d0c4"               # colore lame
+speaker_color: "#1a1c20"              # colore casse
 controls: true                        # mostra i comandi in card
 ```
 
@@ -57,7 +64,7 @@ controls: true                        # mostra i comandi in card
 | tilt_max | number | 100 | Valore che corrisponde al 100% (es. 90 se in gradi). |
 | led_entity | string | - | Luci (light/switch/input_boolean). Abilita pulsante e colore RGB. |
 | glass_entity | string | - | Vetrate scorrevoli (cover, position 0-100). Abilita lo slider vetrate. |
-| day_night | string | - | sun.sun o sensore di luminosita' per giorno/notte automatico. |
+| day_night | string | - | sun.sun, 'auto' (ora reale) o sensore lux per giorno/notte. |
 | mount | string | free | free (prato, 4 lati) o wall (muro di mattoni, 3 lati). |
 | louvers | string | horizontal | Orientamento lame: horizontal o vertical. |
 | slats | number | 14 | Numero totale di lame. |
@@ -67,6 +74,11 @@ controls: true                        # mostra i comandi in card
 | led_temp | string | warm | warm o cool (usato se non RGB). |
 | led_color | string | #ffdca6 | Colore di default della luce. |
 | glass | boolean | false | Mostra le vetrate. |
+| speaker | boolean | false | Casse integrate nei pilastri anteriori. |
+| speaker_entity | string | - | media_player: le onde compaiono solo quando e' in play. |
+| frame_color | string | #34383e | Colore struttura/telaio. |
+| louver_color | string | #d6d0c4 | Colore lame. |
+| speaker_color | string | #1a1c20 | Colore casse. |
 | controls | boolean | false | Mostra slider inclinazione, pulsante luci e slider vetrate. |
 
 ## Licenza

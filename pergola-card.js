@@ -17,12 +17,13 @@ const HALF =norm([LIGHT[0],LIGHT[1]+0.6,LIGHT[2]+0.7]);
 // ---------- dimensioni ----------
 const W=3.0, D=2.2, H=1.6, T=0.042, PITCH=0.185;
 function rad(p){return p/100*90*Math.PI/180;}
+function hex2rgb(h){h=(h||'').replace('#','');return [parseInt(h.substr(0,2),16)||0,parseInt(h.substr(2,2),16)||0,parseInt(h.substr(4,2),16)||0];}
 class PergolaCard extends HTMLElement {
   setConfig(config){
-    const d={title:'Pergola',tilt_entity:null,tilt_max:100,led_entity:null,glass_entity:null,day_night:null,mount:'free',louvers:'horizontal',slats:14,fixed_every:0,led_type:'strip',led_rgb:false,led_color:'#ffdca6',led_temp:'warm',glass:false,controls:false};
+    const d={title:'Pergola',tilt_entity:null,tilt_max:100,led_entity:null,glass_entity:null,day_night:null,mount:'free',louvers:'horizontal',slats:14,fixed_every:0,led_type:'strip',led_rgb:false,led_color:'#ffdca6',led_temp:'warm',glass:false,speaker:false,speaker_entity:null,frame_color:'#34383e',louver_color:'#d6d0c4',speaker_color:'#1a1c20',controls:false};
     this._cfg=Object.assign(d,config||{}); this._built=false;
   }
-  static getStubConfig(){return {tilt_entity:'',led_entity:'',glass_entity:'',mount:'free',louvers:'horizontal',slats:14,fixed_every:4,glass:false,controls:true};}
+  static getStubConfig(){return {tilt_entity:'',led_entity:'',glass_entity:'',speaker_entity:'',mount:'free',louvers:'horizontal',slats:14,fixed_every:4,glass:false,speaker:false,frame_color:'#34383e',louver_color:'#d6d0c4',speaker_color:'#1a1c20',controls:true};}
   getCardSize(){return this._cfg&&this._cfg.controls?6:4;}
   set hass(h){this._hass=h; if(!this._built)this._build(); this._sync();}
   _pct(id,max){const st=this._hass&&this._hass.states[id]; if(!st)return null; const dom=id.split('.')[0], a=st.attributes||{};
@@ -36,8 +37,13 @@ class PergolaCard extends HTMLElement {
     else if(ls&&ls.attributes&&ls.attributes.rgb_color){const r=ls.attributes.rgb_color; col='rgb('+r[0]+','+r[1]+','+r[2]+')';}
     this._ledColor=col;
     const gs=c.glass_entity&&h.states[c.glass_entity]; this._glassTarget = gs? (this._pct(c.glass_entity,100)||0):0;
-    let night=false; if(c.day_night){const dn=h.states[c.day_night]; if(dn){ if(dn.state==='below_horizon'||dn.state==='off')night=true; else if(!isNaN(parseFloat(dn.state)))night=parseFloat(dn.state)<50; }}
+    let night=false;
+    if(c.day_night && c.day_night!=='auto'){const dn=h.states[c.day_night]; if(dn){ if(dn.state==='below_horizon'||dn.state==='off')night=true; else if(!isNaN(parseFloat(dn.state)))night=parseFloat(dn.state)<50; }}
+    else { const hr=new Date().getHours(); night=(hr<7||hr>=20); }
     this._night=night;
+    this._speaker=!!c.speaker;
+    const sp=c.speaker_entity&&h.states[c.speaker_entity];
+    this._spkPlay = c.speaker_entity ? !!(sp&&sp.state==='playing') : !!c.speaker;
     if(this._titleEl) this._titleEl.textContent=c.title;
     this._animate();
   }
@@ -64,6 +70,7 @@ class PergolaCard extends HTMLElement {
     this._titleEl=this.shadowRoot.querySelector('.t');
     this._subEl=this.shadowRoot.querySelector('.s');
     if(c.controls) this._buildControls();
+    if(!c.day_night || c.day_night==='auto') this._clock=setInterval(()=>{ if(this._hass) this._sync(); },60000);
     this._built=true;
   }
   _buildControls(){
@@ -87,12 +94,13 @@ class PergolaCard extends HTMLElement {
     const c=this._cfg, svg=this._svg; if(!svg) return;
     const wall=c.mount==='wall', vertical=c.louvers==='vertical', slatsN=c.slats, fixedEvery=c.fixed_every, ledType=c.led_type, glass=c.glass;
     const night=this._night, ledOn=this._ledOn, ledColor=this._ledColor;
+    const frameColor=c.frame_color, louverColor=c.louver_color, speakerColor=c.speaker_color, speaker=this._speaker, spkPlay=this._spkPlay;
     const cur=this._cur, glassCur=this._glassCur, tilt=this._tiltShown;
     const count=()=>slatsN, isFixed=i=>fixedEvery>0&&((i+1)%fixedEvery===0);
 function metal(n){
   const diff=Math.max(0,dot(n,LIGHT)), spec=Math.pow(Math.max(0,dot(n,HALF)),30);
   const amb=night?0.34:0.52, kd=night?0.34:0.44, ks=night?0.12:0.22;
-  const t=amb+kd*diff, base=night?[120,120,118]:[214,208,196];
+  let base=hex2rgb(louverColor); if(night)base=base.map(v=>Math.round(v*0.62)); const t=amb+kd*diff;
   const c=base.map(v=>v*t+255*ks*spec);
   return `rgb(${c.map(v=>Math.min(255,Math.round(v))).join(",")})`;
 }
@@ -205,12 +213,12 @@ function build(){
   bg+=items.map(o=>o.s).join("");
   // pedana bianca su cui poggia la pergola
   bg+=Q([[-2.2,0.01,2.4],[2.2,0.01,2.4],[2.2,0.01,-1.3],[-2.2,0.01,-1.3]],'url(#deck)');
-  svg.innerHTML=defs+bg+`<g id="shadows"></g><g id="glight"></g><g id="scene"></g><g id="beam"></g>`;
+  svg.innerHTML=defs+bg+`<g id="shadows"></g><g id="glight"></g><g id="scene"></g><g id="beam"></g><g id="speaker"></g>`;
   draw();
 }
 
 function draw(){
-  const list=[], col=night?[36,40,48]:[52,56,63];
+  const list=[]; let col=hex2rgb(frameColor); if(night)col=col.map(v=>Math.round(v*0.6));
   // montanti
   box(list,-W/2-0.06,-W/2+0.06,0,H, D/2-0.06,D/2+0.06,col);
   box(list, W/2-0.06, W/2+0.06,0,H, D/2-0.06,D/2+0.06,col);
@@ -297,6 +305,21 @@ function draw(){
   }
   const glg=svg.querySelector("#glight"); glg.setAttribute("filter","url(#blurB)"); glg.style.mixBlendMode=""; glg.innerHTML=gl;
   svg.querySelector("#beam").innerHTML=strip;
+  let spk="";
+  if(speaker){
+    const grid=(px)=>{
+      const z=D/2+0.062, y0=0.55, y1=1.15, x0=px-0.05, x1=px+0.05;
+      let s=`<polygon points="${[P(x0,y0,z),P(x1,y0,z),P(x1,y1,z),P(x0,y1,z)].map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="${speakerColor}" stroke="#0c0d10" stroke-width="1"/>`;
+      for(let yy=y0+0.05; yy<y1; yy+=0.055){const a=P(x0+0.006,yy,z+0.001), b=P(x1-0.006,yy,z+0.001);
+        s+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="#3a3f47" stroke-width="1"/>`;}
+      const lp=P(px,y0+0.02,z+0.002); s+=`<circle cx="${lp.x.toFixed(1)}" cy="${lp.y.toFixed(1)}" r="1.8" fill="#3aa0ff"/>`;
+      if(spkPlay){const cc=P(px,(y0+y1)/2,z+0.002);
+        for(let w=1;w<=3;w++) s+=`<path d="M ${(cc.x+8*w).toFixed(1)} ${(cc.y-9*w).toFixed(1)} A ${11*w} ${11*w} 0 0 1 ${(cc.x+8*w).toFixed(1)} ${(cc.y+9*w).toFixed(1)}" fill="none" stroke="#7fbfff" stroke-width="2" opacity="${(0.5-w*0.12).toFixed(2)}"/>`;}
+      return s;
+    };
+    spk=grid(-W/2)+grid(W/2);
+  }
+  svg.querySelector("#speaker").innerHTML=spk;
 }
     build();
     if(this._subEl) this._subEl.textContent=(this._tiltTarget>=92?'aperta':this._tiltTarget<=5?'chiusa':'parziale');
@@ -306,6 +329,8 @@ function draw(){
   }
 }
 customElements.define('pergola-card', PergolaCard);
+const PERGOLA_CARD_VERSION='1.1.0';
+try{console.info('%c PERGOLA-CARD %c v'+PERGOLA_CARD_VERSION+' ','color:#fff;background:#34383e;padding:2px 6px;border-radius:4px 0 0 4px','color:#34383e;background:#ffdca6;padding:2px 6px;border-radius:0 4px 4px 0');}catch(e){}
 window.customCards=window.customCards||[];
-window.customCards.push({type:'pergola-card',name:'Pergola Card',description:'Pergola bioclimatica 3D: inclinazione, luci, vetrate.'});
+window.customCards.push({type:'pergola-card',name:'Pergola Card',version:PERGOLA_CARD_VERSION,description:'Pergola bioclimatica con vista 3D animata: inclinazione delle lame, luci LED (strip o faretti, calde/fredde/RGB), vetrate scorrevoli e ambiente giorno/notte. Comandi direttamente dalla card.'});
 })();
