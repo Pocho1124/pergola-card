@@ -81,11 +81,15 @@ controls: true                        # mostra i comandi in card
 | speaker_color | string | #1a1c20 | Colore casse. |
 | controls | boolean | false | Mostra slider inclinazione, pulsante luci e slider vetrate. |
 
-## ☕ Offrimi un caffè
+## ☕ Ti piace questa card?
 
-Se questa card ti è utile, puoi offrirmi un caffè:
+L'ho sviluppata nel tempo libero e la condivido gratis. Se ti è utile, offrimi un caffè: mi aiuta a migliorarla e ad aggiungere nuove funzioni!
 
-[![PayPal](https://img.shields.io/badge/PayPal-offri%20un%20caff%C3%A8-0070ba?logo=paypal&logoColor=white)](https://paypal.me/pocho1124)
+<p align="center">
+  <a href="https://paypal.me/pocho1124" target="_blank">
+    <img src="https://img.buymeacoffee.com/button-api/?text=Offrimi%20un%20caff%C3%A8&emoji=%E2%98%95&slug=pocho1124&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Offrimi un caffe" height="60">
+  </a>
+</p>
 
 ## Licenza
 
