@@ -329,7 +329,7 @@ function draw(){
   }
 }
 customElements.define('pergola-card', PergolaCard);
-const PERGOLA_CARD_VERSION='1.1.0';
+const PERGOLA_CARD_VERSION='1.2.0';
 try{console.info('%c PERGOLA-CARD %c v'+PERGOLA_CARD_VERSION+' ','color:#fff;background:#34383e;padding:2px 6px;border-radius:4px 0 0 4px','color:#34383e;background:#ffdca6;padding:2px 6px;border-radius:0 4px 4px 0');}catch(e){}
 window.customCards=window.customCards||[];
 window.customCards.push({type:'pergola-card',name:'Pergola Card',version:PERGOLA_CARD_VERSION,description:'Pergola bioclimatica con vista 3D animata: inclinazione delle lame, luci LED (strip o faretti, calde/fredde/RGB), vetrate scorrevoli e ambiente giorno/notte. Comandi direttamente dalla card.'});
