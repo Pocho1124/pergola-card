@@ -318,9 +318,10 @@ function draw(){
       let s=`<polygon points="${[P(x0,y0,z),P(x1,y0,z),P(x1,y1,z),P(x0,y1,z)].map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="${speakerColor}" stroke="#0c0d10" stroke-width="1"/>`;
       for(let yy=y0+0.05; yy<y1; yy+=0.055){const a=P(x0+0.006,yy,z+0.001), b=P(x1-0.006,yy,z+0.001);
         s+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="#3a3f47" stroke-width="1"/>`;}
-      const lp=P(px,y0+0.02,z+0.002); s+=`<circle cx="${lp.x.toFixed(1)}" cy="${lp.y.toFixed(1)}" r="1.8" fill="#3aa0ff"/>`;
-      if(spkPlay){const cc=P(px,(y0+y1)/2,z+0.002);
-        for(let w=1;w<=3;w++) s+=`<path d="M ${(cc.x+8*w).toFixed(1)} ${(cc.y-9*w).toFixed(1)} A ${11*w} ${11*w} 0 0 1 ${(cc.x+8*w).toFixed(1)} ${(cc.y+9*w).toFixed(1)}" fill="none" stroke="#7fbfff" stroke-width="2" opacity="${(0.5-w*0.12).toFixed(2)}"/>`;}
+      const on=spkPlay, lp=P(px,y0+0.02,z+0.002);
+      s+=`<circle cx="${lp.x.toFixed(1)}" cy="${lp.y.toFixed(1)}" r="${on?2.6:1.8}" fill="${on?'#38e08a':'#454b54'}"${on?' filter="url(#glow)"':''}/>`;
+      if(on){const cc=P(px,(y0+y1)/2,z+0.002);
+        for(let w=1;w<=3;w++) s+=`<path d="M ${(cc.x+8*w).toFixed(1)} ${(cc.y-9*w).toFixed(1)} A ${11*w} ${11*w} 0 0 1 ${(cc.x+8*w).toFixed(1)} ${(cc.y+9*w).toFixed(1)}" fill="none" stroke="#8fd0ff" stroke-width="2.4" opacity="${(0.6-w*0.13).toFixed(2)}"/>`;}
       return s;
     };
     spk=grid(-W/2)+grid(W/2);
@@ -336,7 +337,7 @@ function draw(){
   }
 }
 customElements.define('pergola-card', PergolaCard);
-const PERGOLA_CARD_VERSION='1.3.0';
+const PERGOLA_CARD_VERSION='1.3.1';
 try{console.info('%c PERGOLA-CARD %c v'+PERGOLA_CARD_VERSION+' ','color:#fff;background:#34383e;padding:2px 6px;border-radius:4px 0 0 4px','color:#34383e;background:#ffdca6;padding:2px 6px;border-radius:0 4px 4px 0');}catch(e){}
 window.customCards=window.customCards||[];
 window.customCards.push({type:'pergola-card',name:'Pergola Card',version:PERGOLA_CARD_VERSION,description:'Pergola bioclimatica con vista 3D animata: inclinazione delle lame, luci LED (strip o faretti, calde/fredde/RGB), vetrate scorrevoli e ambiente giorno/notte. Comandi direttamente dalla card.'});
